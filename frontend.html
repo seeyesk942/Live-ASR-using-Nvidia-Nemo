@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live ASR with Erase</title>
+    <style>
+        #transcript {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 80%;
+            height: 150px;
+            margin-top: 10px;
+            overflow-y: auto;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+        }
+        button {
+            margin: 5px;
+            padding: 8px 15px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Live Speech-to-Text</h2>
+    <button id="start">Start</button>
+    <button id="stop">Stop</button>
+    <button id="erase">ERASE</button>
+    <div id="transcript">Transcript will appear here...</div>
+
+<script>
+let ws;
+let mediaRecorder;
+let audioContext;
+let processor;
+let input;
+let globalStream;
+
+document.getElementById("start").onclick = async () => {
+    ws = new WebSocket("ws://localhost:8000/ws/asr");
+
+    ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.text) {
+            document.getElementById("transcript").innerText = msg.text;
+        }
+    };
+
+    globalStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioContext = new AudioContext({sampleRate: 16000});  // 16 kHz
+    input = audioContext.createMediaStreamSource(globalStream);
+
+    processor = audioContext.createScriptProcessor(4096, 1, 1);
+    input.connect(processor);
+    processor.connect(audioContext.destination);
+
+    processor.onaudioprocess = (e) => {
+        const channelData = e.inputBuffer.getChannelData(0); // mono
+        const buffer = new Int16Array(channelData.length);
+        for (let i = 0; i < channelData.length; i++) {
+            let s = Math.max(-1, Math.min(1, channelData[i]));
+            buffer[i] = s < 0 ? s * 32768 : s * 32767;
+        }
+        let audioB64 = btoa(String.fromCharCode.apply(null, new Uint8Array(buffer.buffer)));
+        ws.send(JSON.stringify({ type: "audio", data: audioB64 }));
+    };
+};
+
+document.getElementById("stop").onclick = () => {
+    if (processor) processor.disconnect();
+    if (input) input.disconnect();
+    if (globalStream) globalStream.getTracks().forEach(t => t.stop());
+    if (ws) ws.send(JSON.stringify({ type: "stop" }));
+};
+
+document.getElementById("erase").onclick = () => {
+    document.getElementById("transcript").innerText = "";
+};
+</script>
+</body>
+</html>

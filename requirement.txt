@@ -1,0 +1,27 @@
+#https://docs.nvidia.com/nemo-framework/user-guide/latest/nemotoolkit/asr/intro.html
+#https://learnopencv.com/automatic-speech-recognition/
+# Python version 3.11.9
+#IDE VS CODE Version: 1.104.3
+# OS:windows
+#Processor	11th Gen Intel(R) Core(TM) i5-1155G7 @ 2.50GHz (2.50 GHz)
+#Installed RAM	8.00 GB (7.65 GB usable)
+#System type	64-bit operating system, x64-based processor
+#Edition	Windows 11 Home Single Language
+#Version	24H2
+#OS build	26100.6584
+#pip version 24.0
+#Make sure you have microsoft C++ build tools install
+#Refer https://stackoverflow.com/questions/64261546/how-to-solve-error-microsoft-visual-c-14-0-or-greater-is-required-when-inst
+
+##virtual env commands
+#python -m venv .venv
+#.\.venv\Scripts\activate.
+
+##EXPLICIT INSTALLATION
+#pip install nemo_toolkit['asr']==2.4.1
+#pip install googletrans==4.0.0rc1
+#pip install uvicorn==0.30.6
+#pip install fastapi==0.115.0
+
+
+
